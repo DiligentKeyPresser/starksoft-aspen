@@ -300,7 +300,24 @@ namespace Starksoft.Aspen.Proxy
             }
             catch (Exception ex)
             {
-                throw new ProxyException(String.Format(CultureInfo.InvariantCulture, "Connection to proxy host {0} on port {1} failed.", Utils.GetHost(_tcpClient), Utils.GetPort(_tcpClient)), ex);
+                // Sometimes we get wierd ArgumentNullException produced by Utils.GetHost().
+                // Getting proxy host is not crucial here, so we let it go.
+
+                string
+                    socks_host = null,
+                    socks_port = null;
+                try
+                {
+                    socks_host = Utils.GetHost(_tcpClient);
+                    socks_port = Utils.GetPort(_tcpClient);
+                }
+                catch { /* _tcpClient is null ^^ */ }
+
+                throw new ProxyException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Connection to proxy host {0} on port {1} failed. SeeInnerException for details.",
+                        socks_host ?? "<null>", socks_port ?? "<null>"), ex);
             }
         }
 
